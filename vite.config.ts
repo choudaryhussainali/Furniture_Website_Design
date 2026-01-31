@@ -1,16 +1,29 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  plugins: [react()],
-  base: './',
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-  },
-  resolve: {
-    alias: {
-      '@': './',
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  // Fix: Cast process to any to avoid TS error about missing cwd property
+  const env = loadEnv(mode, (process as any).cwd(), '');
+
+  return {
+    plugins: [react()],
+    base: './', // Ensures assets are linked relatively for flexible deployment
+    define: {
+      // Fix: Replaces process.env.API_KEY with the actual value during build
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || ''),
+      // Fix: Polyfills process.env object to prevent browser crashes
+      'process.env': {}, 
     },
-  },
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+    },
+    resolve: {
+      alias: {
+        '@': './',
+      },
+    },
+  };
 });
