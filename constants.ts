@@ -285,7 +285,3 @@ export const REVIEWS = [
         source: "Google"
     }
 ]
-
-export const SYSTEM_INSTRUCTION = `
-You are the "Concierge", an AI design consultant for Fur.
-`;

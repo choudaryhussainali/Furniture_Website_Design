@@ -15,14 +15,6 @@ export interface Collection {
   image: string;
 }
 
-export enum ConciergeState {
-  IDLE = 'IDLE',
-  LISTENING = 'LISTENING',
-  THINKING = 'THINKING',
-  SPEAKING = 'SPEAKING',
-  DISCONNECTED = 'DISCONNECTED'
-}
-
 export interface NavItem {
   label: string;
   path: string;
