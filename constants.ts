@@ -34,7 +34,7 @@ export const PRODUCTS: Product[] = [
     category: 'Chair',
     description: 'Sleek silhouette that complements any dining table.',
     features: ['Matte Black Finish', 'Curved Back', 'Lightweight', 'Easy Clean'],
-    imageUrl: 'https://images.unsplash.com/photo-1506439773649-6e0eb5818be3?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://plus.unsplash.com/premium_photo-1669324449387-cabef8ec3a0b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fEhvbWUlMjBkZWNvciUyMGZ1cm5pdHVyZXxlbnwwfHwwfHx8MA%3D%3D?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'chair-04',
@@ -52,7 +52,7 @@ export const PRODUCTS: Product[] = [
     category: 'Chair',
     description: 'Rugged metal stool with a distressed finish for loft aesthetics.',
     features: ['Powder Coated Steel', 'Adjustable Height', 'Footrest', 'Rubber Feet'],
-    imageUrl: 'https://images.unsplash.com/photo-1503602642458-2321114458ed?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1639235887769-45f097d6d2f7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8SG9tZSUyMGRlY29yJTIwZnVybml0dXJlfGVufDB8fDB8fHww?auto=format&fit=crop&q=80&w=800',
   },
 
   // --- TABLES ---
@@ -90,7 +90,7 @@ export const PRODUCTS: Product[] = [
     category: 'Table',
     description: 'Luxurious Carrara marble top with a sturdy geometric base.',
     features: ['Carrara Marble', 'Heat Resistant', 'Seals 6 People', 'Heavy Duty'],
-    imageUrl: 'https://images.unsplash.com/photo-1577140917170-285929db55cc?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1688302740483-bea686d8a860?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8SG9tZSUyMGRlY29yJTIwZnVybml0dXJlfGVufDB8fDB8fHww?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'table-05',
@@ -157,7 +157,7 @@ export const PRODUCTS: Product[] = [
     category: 'Lighting',
     description: 'Sweeping metal arc lamp with a marble base.',
     features: ['Marble Base', 'Adjustable Arc', 'Dimmer Switch', 'Warm LED'],
-    imageUrl: 'https://images.unsplash.com/photo-1507473888900-52e1adad8dbf?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1559638869-39e9ef6a6dc6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fEhvbWUlMjBkZWNvciUyMGZ1cm5pdHVyZXxlbnwwfHwwfHx8MA%3D%3D?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'light-02',
@@ -166,7 +166,7 @@ export const PRODUCTS: Product[] = [
     category: 'Lighting',
     description: 'Textured ceramic base with a linen shade.',
     features: ['Hand-thrown Ceramic', 'Linen Shade', 'Soft Glow', 'Artisanal'],
-    imageUrl: 'https://images.unsplash.com/photo-1513506003011-3b03c8b8245b?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1731814378677-14eccd7415c0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fEhvbWUlMjBkZWNvciUyMGZ1cm5pdHVyZXxlbnwwfHwwfHx8MA%3D%3D?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'light-03',
@@ -222,7 +222,7 @@ export const PRODUCTS: Product[] = [
     category: 'Decor',
     description: 'Soft washed linen pillow cover with down insert.',
     features: ['Belgian Linen', 'Down Insert', 'Hidden Zipper', 'Machine Washable'],
-    imageUrl: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://plus.unsplash.com/premium_photo-1676968002945-c8f74e0e27d8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8SG9tZSUyMGRlY29yJTIwZnVybml0dXJlfGVufDB8fDB8fHww?auto=format&fit=crop&q=80&w=800',
   },
   {
     id: 'decor-05',
@@ -240,7 +240,7 @@ export const PRODUCTS: Product[] = [
     category: 'Decor',
     description: 'Minimalist wooden clock with silent movement.',
     features: ['Solid Walnut', 'Silent Mechanism', 'Minimalist Face', 'Battery Operated'],
-    imageUrl: 'https://images.unsplash.com/photo-1563861826100-9cb868c625b8?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1567016526105-22da7c13161a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8SG9tZSUyMGRlY29yJTIwZnVybml0dXJlfGVufDB8fDB8fHww?auto=format&fit=crop&q=80&w=800',
   },
 ];
 
