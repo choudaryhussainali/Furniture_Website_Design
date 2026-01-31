@@ -1,4 +1,4 @@
-import { GoogleGenAI, LiveSession, FunctionDeclaration, Type } from "@google/genai";
+import { GoogleGenAI, LiveSession, FunctionDeclaration, Type, Modality, LiveServerMessage } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
 import { base64ToUint8Array, float32ToInt16, arrayBufferToBase64 } from '../utils/audio';
 
@@ -20,17 +20,18 @@ const navigateTool: FunctionDeclaration = {
 
 export class GeminiLiveService {
   private ai: GoogleGenAI;
-  private session: LiveSession | null = null;
+  private sessionPromise: Promise<LiveSession> | null = null;
   private audioContext: AudioContext | null = null;
   private inputSource: MediaStreamAudioSourceNode | null = null;
   private processor: ScriptProcessorNode | null = null;
   private nextStartTime: number = 0;
+  private scheduledSources: Set<AudioBufferSourceNode> = new Set();
   
   public onNavigate: ((path: string) => void) | null = null;
   public onStateChange: ((state: string) => void) | null = null;
 
-  constructor(apiKey: string) {
-    this.ai = new GoogleGenAI({ apiKey });
+  constructor() {
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
 
   async connect() {
@@ -48,46 +49,57 @@ export class GeminiLiveService {
       }});
 
       // Connect to Gemini Live
-      this.session = await this.ai.live.connect({
+      this.sessionPromise = this.ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        callbacks: {
+            onopen: () => {
+                this.notifyState('LISTENING');
+            },
+            onmessage: async (message: LiveServerMessage) => {
+                await this.handleMessage(message);
+            },
+            onclose: (e) => {
+                console.log("Session closed", e);
+                this.notifyState('DISCONNECTED');
+            },
+            onerror: (e) => {
+                console.error("Session error", e);
+                this.notifyState('DISCONNECTED');
+            }
+        },
         config: {
-          responseModalities: ['AUDIO'], // Use string literal to match type expectation if enum fails
+          responseModalities: [Modality.AUDIO], 
           systemInstruction: SYSTEM_INSTRUCTION,
           tools: [{ functionDeclarations: [navigateTool] }],
         },
       });
 
       // Handle Input (Microphone -> Gemini)
-      // Note: ScriptProcessor is deprecated but widely supported for this quick implementation.
-      // AudioWorklet is better for prod but requires separate file serving.
       const inputContext = new AudioContext({ sampleRate: 16000 });
       this.inputSource = inputContext.createMediaStreamSource(stream);
       this.processor = inputContext.createScriptProcessor(4096, 1, 1);
 
-      this.processor.onaudioprocess = async (e) => {
+      this.processor.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
         const int16Data = float32ToInt16(inputData);
         const base64Data = arrayBufferToBase64(int16Data.buffer);
 
-        if (this.session) {
-          try {
-              await this.session.sendRealtimeInput({
+        if (this.sessionPromise) {
+          this.sessionPromise.then((session) => {
+              session.sendRealtimeInput({
                 media: {
                   mimeType: 'audio/pcm;rate=16000',
                   data: base64Data
                 }
               });
-          } catch(err) {
-              console.error("Error sending audio input", err);
-          }
+          }).catch(err => {
+              console.error("Error sending input", err);
+          });
         }
       };
 
       this.inputSource.connect(this.processor);
       this.processor.connect(inputContext.destination);
-
-      // Handle Output (Gemini -> Speaker)
-      this.listenToResponse();
       
     } catch (error) {
       console.error('Connection failed:', error);
@@ -95,19 +107,12 @@ export class GeminiLiveService {
     }
   }
 
-  private async listenToResponse() {
-    if (!this.session) return;
-
-    for await (const message of this.session.receive()) {
+  private async handleMessage(message: LiveServerMessage) {
       // 1. Handle Audio
       const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
       if (audioData) {
         this.notifyState('SPEAKING');
         await this.playAudioChunk(audioData);
-      } else {
-          // If no audio and not tool call, we might be thinking or listening
-          // But effectively we are idle from audio perspective briefly
-          // this.notifyState('IDLE');
       }
 
       // 2. Handle Tool Calls (Navigation)
@@ -120,19 +125,23 @@ export class GeminiLiveService {
               this.onNavigate(path);
             }
              // Send success response back to model
-            await this.session.sendToolResponse({
-                functionResponses: [{
-                    id: call.id,
-                    name: call.name,
-                    response: { result: 'Navigated successfully' }
-                }]
-            });
+            if (this.sessionPromise) {
+                const session = await this.sessionPromise;
+                await session.sendToolResponse({
+                    functionResponses: [{
+                        id: call.id,
+                        name: call.name,
+                        response: { result: 'Navigated successfully' }
+                    }]
+                });
+            }
           }
         }
       }
 
       // 3. Handle Interruption
       if (message.serverContent?.interrupted) {
+        this.stopAllAudio();
         this.nextStartTime = 0; // Reset audio queue
         this.notifyState('LISTENING');
       }
@@ -141,7 +150,21 @@ export class GeminiLiveService {
       if (message.serverContent?.turnComplete) {
          this.notifyState('IDLE');
       }
-    }
+  }
+
+  private stopAllAudio() {
+      for (const source of this.scheduledSources) {
+          try {
+              source.stop();
+          } catch(e) {
+              // ignore
+          }
+      }
+      this.scheduledSources.clear();
+      // Reset timing to now to avoid large delays if we resume
+      if (this.audioContext) {
+          this.nextStartTime = this.audioContext.currentTime;
+      }
   }
 
   private async playAudioChunk(base64Data: string) {
@@ -156,14 +179,17 @@ export class GeminiLiveService {
 
     const now = this.audioContext.currentTime;
     // Schedule play
-    const startTime = Math.max(now, this.nextStartTime);
-    source.start(startTime);
+    // Ensure we don't schedule in the past
+    this.nextStartTime = Math.max(now, this.nextStartTime);
+
+    source.start(this.nextStartTime);
     
     // Update next start time
-    this.nextStartTime = startTime + audioBuffer.duration;
+    this.nextStartTime = this.nextStartTime + audioBuffer.duration;
     
+    this.scheduledSources.add(source);
     source.onended = () => {
-        // Could check if queue empty to set state to IDLE/LISTENING
+        this.scheduledSources.delete(source);
     };
   }
 
@@ -190,13 +216,23 @@ export class GeminiLiveService {
   }
 
   disconnect() {
-    if (this.processor) this.processor.disconnect();
-    if (this.inputSource) this.inputSource.disconnect();
-    if (this.session) {
-        // No explicit close method in session object typically, handled by connection drop
-        // But we stop sending.
-        this.session = null;
+    if (this.processor) {
+        this.processor.disconnect();
+        this.processor = null;
     }
+    if (this.inputSource) {
+        this.inputSource.disconnect();
+        this.inputSource = null;
+    }
+    if (this.sessionPromise) {
+        this.sessionPromise.then(session => {
+            (session as any).close?.();
+        });
+        this.sessionPromise = null;
+    }
+    
+    this.stopAllAudio();
+    
     if (this.audioContext) {
       this.audioContext.close();
       this.audioContext = null;

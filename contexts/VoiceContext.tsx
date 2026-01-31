@@ -45,7 +45,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsActive(true);
       setState(ConciergeState.IDLE); // Brief idle before connect
 
-      const service = new GeminiLiveService(process.env.API_KEY);
+      // No need to pass API Key, it is picked up from process.env inside the service
+      const service = new GeminiLiveService();
       serviceRef.current = service;
 
       service.onStateChange = (newStateStr) => {

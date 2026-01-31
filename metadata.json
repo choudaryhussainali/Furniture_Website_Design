@@ -1,5 +1,7 @@
 {
   "name": "D'Cozy Home",
   "description": "A luxury furniture brand experience.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }
